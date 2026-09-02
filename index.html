@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Aaron Tu | CS 180</title>
+
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      background: #f7f7f5;
+      color: #1f1f1f;
+    }
+
+    .page {
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 80px 24px;
+    }
+
+    header {
+      margin-bottom: 48px;
+    }
+
+    h1 {
+      margin: 0 0 8px;
+      font-size: 40px;
+      font-weight: 700;
+      letter-spacing: -1px;
+    }
+
+    .subtitle {
+      margin: 0;
+      color: #666;
+      font-size: 17px;
+    }
+
+    .projects {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 16px;
+    }
+
+    .project {
+      display: block;
+      padding: 24px;
+      background: white;
+      border: 1px solid #e4e4e0;
+      border-radius: 12px;
+      text-decoration: none;
+      color: inherit;
+      transition: transform 0.15s ease, box-shadow 0.15s ease;
+    }
+
+    .project:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 18px rgba(0, 0, 0, 0.07);
+    }
+
+    .number {
+      color: #777;
+      font-size: 14px;
+      margin-bottom: 8px;
+    }
+
+    .title {
+      font-size: 18px;
+      font-weight: 600;
+      line-height: 1.35;
+    }
+
+    footer {
+      margin-top: 48px;
+      color: #888;
+      font-size: 14px;
+    }
+  </style>
+</head>
+
+<body>
+  <main class="page">
+    <header>
+      <h1>Aaron Tu</h1>
+      <p class="subtitle">CS 180: Introduction to Computer Vision and Computational Photography · Fall 2026</p>
+    </header>
+
+    <section class="projects">
+      <a class="project" href="proj0/">
+        <div class="number">Project 0</div>
+        <div class="title">Becoming Friends with Your Camera</div>
+      </a>
+
+      <a class="project" href="proj1/">
+        <div class="number">Project 1</div>
+        <div class="title">Images of the Russian Empire</div>
+      </a>
+
+      <a class="project" href="proj2/">
+        <div class="number">Project 2</div>
+        <div class="title">Fun with Filters and Frequencies</div>
+      </a>
+
+      <a class="project" href="proj3/">
+        <div class="number">Project 3</div>
+        <div class="title">(Auto)stitching and Photo Mosaics</div>
+      </a>
+
+      <a class="project" href="proj4/">
+        <div class="number">Project 4</div>
+        <div class="title">Neural Radiance Field</div>
+      </a>
+
+      <a class="project" href="proj5/">
+        <div class="number">Project 5</div>
+        <div class="title">Fun with Diffusion Models</div>
+      </a>
+    </section>
+
+    <footer>
+      UC Berkeley · CS 180
+    </footer>
+  </main>
+</body>
+</html>
