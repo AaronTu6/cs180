@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Aligning three grayscale exposures to reconstruct color photographs from the Prokudin-Gorskii collection. CS 180 Project 1 by Aaron Tu.">
+  <title>Images of the Russian Empire · Aaron Tu</title>
+  <link rel="stylesheet" href="style.css">
+  <script src="gallery.js" defer></script>
+</head>
+<body>
+  <a class="skip-link" href="#main">Skip to content</a>
+  <header class="site-header">
+    <a class="home" href="../">Aaron Tu <span>/ CS 180</span></a>
+    <nav aria-label="Project sections"><a href="#method">Method</a><a href="#results">Results</a><a href="#measurements">Measurements</a></nav>
+  </header>
+  <main id="main">
+    <section class="hero">
+      <div class="hero-copy">
+        <p class="eyebrow">Fall 2026 · Project 01</p>
+        <h1>Images of the<br>Russian Empire<span class="accent">.</span></h1>
+        <p class="hero-deck">Three grayscale exposures.<br>One photograph in color.</p>
+        <p>A reconstruction of the Prokudin-Gorskii collection through image alignment: searching for the translations that bring red, green, and blue back together.</p>
+        <a class="text-link" href="#results">Explore the reconstructions <span aria-hidden="true">↓</span></a>
+      </div>
+      <figure class="hero-image"><img src="assets/loc_locomotive_pyramid_ncc.jpg" alt="Reconstructed color photograph of a steam locomotive" fetchpriority="high">
+        <figcaption>Steam engine Kompaund, 1910 · Pyramid alignment with NCC</figcaption></figure>
+    </section>
+
+    <div class="stats" aria-label="Evaluation summary">
+      <div><strong>17</strong><span>plates reconstructed</span></div>
+      <div><strong>@@RUN_COUNT@@</strong><span>measured alignment runs</span></div>
+      <div><strong>2</strong><span>pixel-based metrics</span></div>
+      <div><strong>@@MAX_TIME@@ s</strong><span>slowest pyramid NCC run</span></div>
+    </div>
+
+    <section id="method" class="section">
+      <p class="eyebrow">01 / The approach</p>
+      <h2>Finding the same scene, three times.</h2>
+      <div class="prose">
+        <p>Sergei Prokudin-Gorskii recorded scenes through three color filters, creating separate grayscale exposures. The digitized plates stack blue, green, and red vertically. Because the exposures do not line up exactly, simply assigning them to RGB channels creates colored outlines and doubled details. <a href="https://www.loc.gov/pictures/collection/prok/">Collection background ↗</a></p>
+        <p>The pipeline divides each plate into three equal-height images, discarding any leftover rows. Pixel values are converted to floats on a common scale. Blue stays fixed; green and red are translated independently to match it. The final array stacks the shifted channels in <strong>R, G, B</strong> order.</p>
+      </div>
+      <ol class="pipeline">
+        <li><span>01</span><h3>Split</h3><p>Separate the stacked B, G, R exposures.</p></li>
+        <li><span>02</span><h3>Compare</h3><p>Score corresponding interior pixels.</p></li>
+        <li><span>03</span><h3>Align</h3><p>Find the best green and red translations.</p></li>
+        <li><span>04</span><h3>Recombine</h3><p>Stack RGB and save the color image.</p></li>
+      </ol>
+      <div class="two-column explanations">
+        <article><h3>Single-scale search</h3><p>Try every integer displacement within ±15 pixels along each axis: 31 × 31 = 961 candidates per channel. Shift the moving image, score it against blue, and keep the best offset. This is practical for the small JPEGs, but its displacement range is too limited for many full-size TIFFs.</p></article>
+        <article><h3>A coarse-to-fine pyramid</h3><p>Recursively resize each channel by ½ with anti-aliasing until its largest dimension is at most 400 pixels. Align there with the ±15 search. At each larger level, double the estimate and refine within ±2 pixels, testing only 25 candidates. The final level still uses full-resolution pixels.</p></article>
+      </div>
+      <div class="pyramid-example" aria-label="Example of offset refinement">
+        <div><small>Small image</small><code>(5, −3)</code></div><span aria-hidden="true">→</span>
+        <div><small>Double the estimate</small><code>(10, −6)</code></div><span aria-hidden="true">→</span>
+        <div><small>Refine at larger size</small><code>dy: 8…12 · dx: −8…−4</code></div>
+      </div>
+      <div class="two-column metric-boxes">
+        <article><span class="tag">Lower is better</span><h3>L2 distance</h3><p class="formula">√Σ(A − B)²</p><p>Measure the difference between corresponding pixel intensities. L2 is simple, but different color channels can have very different brightness values even when their scene details align.</p></article>
+        <article><span class="tag">Higher is better</span><h3>Normalized cross-correlation</h3><p class="formula">Σ(A′B′) / (‖A′‖₂ ‖B′‖₂)</p><p>Here A′ = A − mean(A), and likewise for B. Mean subtraction and normalization reduce sensitivity to brightness and contrast differences. Constant regions receive an unusable score because their denominator is zero.</p></article>
+      </div>
+      <div class="prose">
+        <h3>Borders, coordinates, and fixed parameters</h3>
+        <p>Alignment scores use a fixed interior region for all candidates in a search. Each margin is 10% of the image dimension plus the absolute search-center displacement and search radius. This excludes the photographic border and pixels wrapped by <code>np.roll</code>. The same parameter settings are used across all images.</p>
+        <p>Internally offsets are <code>(dy, dx)</code>, matching array rows and columns. Every table below reports <strong>(x, y) = (dx, dy)</strong>: positive x moves right and positive y moves down. These are the shifts applied to green and red, with blue as the reference.</p>
+        <p>The saved images retain their original borders. Excluding borders from scoring is not automatic output cropping. These results use raw channel pixels with L2 or NCC; no edge features, color correction, or manual per-image offsets are applied.</p>
+      </div>
+    </section>
+
+    <section id="single" class="section gallery-section">
+      <p class="eyebrow">02 / Start small</p><h2>Single-scale alignment.</h2>
+      <p class="section-intro">The three JPEGs provide a quick first test. Both metrics selected the same offsets on all three. Switch to the unaligned view to see the colored fringes the search removes.</p>
+      @@SINGLE_CONTROLS@@
+      <div class="gallery">@@SINGLE_CARDS@@</div>
+      <details><summary>Single-scale offsets and runtimes</summary>@@SINGLE_TABLES@@</details>
+    </section>
+
+    <section id="results" class="section gallery-section">
+      <p class="eyebrow">03 / The supplied collection</p><h2>Fourteen plates, at full resolution.</h2>
+      <p class="section-intro">Every supplied image was evaluated using the pyramid with both metrics, including the JPEGs. NCC is shown first. The gallery previews are resized for the web; the linked JPEGs retain the full reconstructed dimensions.</p>
+      @@PROVIDED_CONTROLS@@
+      <div class="gallery">@@PROVIDED_CARDS@@</div>
+    </section>
+
+    <section id="additional" class="section gallery-section">
+      <p class="eyebrow">04 / Beyond the supplied images</p><h2>Three more plates from the archive.</h2>
+      <p class="section-intro">A locomotive, a portrait, and a city gate test the same pipeline on additional subjects. The inputs are full-resolution stacked grayscale TIFFs downloaded from the Library of Congress, rather than its finished color composites.</p>
+      @@EXTRA_CONTROLS@@
+      <div class="gallery">@@EXTRA_CARDS@@</div>
+      <div class="source-box"><h3>Original photographs</h3><ul>@@SOURCES@@</ul>
+        <p>Photographs by Sergei Mikhailovich Prokudin-Gorskii. Prokudin-Gorskii photograph collection, Library of Congress, Prints and Photographs Division. Source URLs and input checksums are recorded in <a href="sources.json">sources.json</a>.</p></div>
+    </section>
+
+    <section id="discussion" class="section">
+      <p class="eyebrow">05 / What works, what remains</p><h2>Alignment is only part of restoration.</h2>
+      <div class="two-column comparison">
+        <figure><a href="outputs/church_pyramid_l2.jpg"><img src="assets/church_pyramid_l2.jpg" alt="Church with a visibly displaced red channel under L2 alignment" loading="lazy"></a><figcaption>Church · L2 · red channel displaced</figcaption></figure>
+        <figure><a href="outputs/church_pyramid_ncc.jpg"><img src="assets/church_pyramid_ncc.jpg" alt="Church with its towers aligned using NCC" loading="lazy"></a><figcaption>Church · NCC · towers align</figcaption></figure>
+      </div>
+      <div class="prose">
+        <h3>Metric choice changes the answer</h3><p>On Church, L2 selects red offset (270, 64), while NCC selects (−4, 58). The L2 result has conspicuous doubled architecture. NCC brings the towers together. This is consistent with L2 being sensitive to channel brightness differences; normalizing the pixel values produces a better match here.</p>
+        <h3>The difficult case: Emir</h3><p>Emir remains visibly imperfect with both metrics, especially around the face, hat, and richly colored clothing. Different fabrics respond very differently to the color filters, so corresponding regions do not follow one simple brightness relationship. An incorrect estimate at a coarse scale can also persist because later levels search only nearby. Edge-based matching would be a useful next experiment, but is not included in this baseline.</p>
+        <h3>Remaining artifacts</h3><p>The other supplied NCC results show substantially aligned scene structure in visual inspection. Borders remain colored because the shifted exposures cover different areas. Moving foliage, water, and people can also produce local fringes that one global translation cannot remove. No numerical ground-truth offsets were available; the per-image notes describe visual inspection, not a measured accuracy score.</p>
+        <p>No bells and whistles are claimed. Automatic border detection, white balance, contrast adjustment, and more flexible transformations are possible extensions.</p>
+      </div>
+    </section>
+
+    <section id="measurements" class="section">
+      <p class="eyebrow">06 / Reproducible results</p><h2>Every offset, every run.</h2>
+      <p class="section-intro">Times include input reading, alignment, and RGB assembly; JPEG export is excluded. Runs were performed sequentially. Total measured processing across all @@RUN_COUNT@@ runs: <strong>@@TOTAL_TIME@@ seconds</strong>. The pyramid NCC runs stayed below one minute per image.</p>
+      <p class="download-links"><a href="results.csv" download>Download CSV ↓</a><a href="results.json">View JSON ↗</a><a href="https://github.com/AaronTu6/cs180/tree/main/proj1">Browse the code ↗</a></p>
+      @@NCC_TABLE@@
+      <details><summary>All pyramid L2 measurements</summary>@@L2_TABLE@@</details>
+      <p class="small">@@ENVIRONMENT@@ <a href="environment.json">Full run environment</a>.</p>
+      <details><summary>Reproduce the experiment</summary>
+        <p>Place the supplied data folder inside <code>proj1/</code>. From the repository root, run:</p>
+        <pre><code>python -m pip install -r proj1/requirements.txt
+python proj1/download_extra.py
+python proj1/batch.py
+python proj1/build_page.py</code></pre>
+        <p>The batch runner writes each measurement immediately to CSV and JSON. It can rerun individual groups with <code>--groups single</code>, <code>--groups provided</code>, or <code>--groups extra</code>, and choose metrics with <code>--metrics ncc</code>. Existing results for other groups and metrics are preserved. Visual review notes are maintained separately in <code>reviews.json</code>.</p>
+      </details>
+    </section>
+  </main>
+  <footer><p>Aaron Tu · UC Berkeley · CS 180 · Fall 2026</p><p><a href="https://cal-cs180.github.io/fa26/hw/proj1/index.html">Project assignment ↗</a><a href="../">Back to all projects ↑</a></p></footer>
+  <script id="report-data" type="application/json">@@DATA@@</script>
+</body>
+</html>

@@ -1,0 +1,70 @@
+{
+  "cathedral.jpg": {
+    "ncc": "Church and foreground rooflines align; colored scan borders remain.",
+    "l2": "Same offsets as NCC; scene structure aligns."
+  },
+  "church.tif": {
+    "ncc": "The towers align; the blue-purple cast and colored borders remain.",
+    "l2": "Failure: the red channel is displaced, producing doubled towers."
+  },
+  "emir.tif": {
+    "ncc": "Failure: visible color separation around the hat, face, and clothing.",
+    "l2": "Failure: substantial color separation remains on the figure."
+  },
+  "harvesters.tif": {
+    "ncc": "The group and field largely align; some local fringes remain on people.",
+    "l2": "Very similar to NCC, with one-pixel differences in several offsets."
+  },
+  "icon.tif": {
+    "ncc": "Columns, railings, and architectural ornament align.",
+    "l2": "Same offsets as NCC; interior architectural details align."
+  },
+  "ilemselga.tif": {
+    "ncc": "The church facade and roofline align; colored borders remain.",
+    "l2": "Same offsets as NCC; the church structure aligns."
+  },
+  "melons.tif": {
+    "ncc": "The stall, roof, and melon outlines largely align.",
+    "l2": "Same offsets as NCC despite the large red-channel displacement."
+  },
+  "monastery.jpg": {
+    "ncc": "The monastery and bridge align; color bands remain at the edges.",
+    "l2": "Same offsets as NCC; monastery and bridge details align."
+  },
+  "religous_painting.tif": {
+    "ncc": "The picture frame and painted figures align; border damage remains.",
+    "l2": "Same offsets as NCC; the picture frame aligns."
+  },
+  "self_portrait.tif": {
+    "ncc": "The figure and rocks align; local color artifacts remain in water and foliage.",
+    "l2": "Same offsets as NCC; water and foliage retain local artifacts."
+  },
+  "siren.tif": {
+    "ncc": "The main flower clusters align; fine foliage retains some color fringes.",
+    "l2": "Same offsets as NCC; fine foliage retains local fringes."
+  },
+  "three_generations.tif": {
+    "ncc": "Faces, clothing, and railings largely align; minor local fringes remain.",
+    "l2": "Same offsets as NCC; the three figures largely align."
+  },
+  "tobolsk.jpg": {
+    "ncc": "Rooflines and foreground timber align; the cyan cast remains.",
+    "l2": "Same offsets as NCC; rooflines and timber align."
+  },
+  "wharf.tif": {
+    "ncc": "The pier and boat align; water and the scan border retain color artifacts.",
+    "l2": "Same offsets as NCC; pier and boat structure align."
+  },
+  "loc_locomotive.tif": {
+    "ncc": "The engine and rails largely align; colored borders and small edge fringes remain.",
+    "l2": "Nearly identical to NCC, with a one-pixel green-channel difference."
+  },
+  "loc_in_italy.tif": {
+    "ncc": "The woman and gate align; a magenta cast and damaged borders remain.",
+    "l2": "Same offsets as NCC; the woman and gate align."
+  },
+  "loc_nikolskii_gates.tif": {
+    "ncc": "The gateway and brickwork align; thin wires retain some color fringes.",
+    "l2": "Nearly identical to NCC, with a one-pixel green-channel difference."
+  }
+}

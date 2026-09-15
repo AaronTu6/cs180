@@ -1,0 +1,16 @@
+{
+  "python": "3.11.3",
+  "numpy": "2.4.6",
+  "scikit_image": "0.26.0",
+  "platform": "Windows-10-10.0.26200-SP0",
+  "processor": "AMD64 Family 25 Model 68 Stepping 1, AuthenticAMD",
+  "timing": "Read + align + RGB assembly; JPEG export excluded",
+  "parameters": {
+    "coarse_radius": 15,
+    "refinement_radius": 2,
+    "coarse_max_dimension": 400,
+    "border_fraction": 0.1,
+    "pyramid_scale": 0.5,
+    "anti_aliasing": true
+  }
+}
