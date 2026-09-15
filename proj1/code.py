@@ -10,14 +10,12 @@ DATA_DIR = ROOT / "CS180_fa2026_proj1_data"
 
 
 def load_channels(path):
-    """Read a stacked plate as floats in [0, 1]; return blue, green, red."""
     image = sk.img_as_float32(skio.imread(path))
     height = image.shape[0] // 3
     return image[:height], image[height:2 * height], image[2 * height:3 * height]
 
 
 def crop_interior(image, fraction=0.1):
-    """Return the center, removing fraction of each dimension from each side."""
     height, width = image.shape[:2]
     row_margin = int(height * fraction)
     col_margin = int(width * fraction)
@@ -26,39 +24,34 @@ def crop_interior(image, fraction=0.1):
 
 
 def l2_score(a, b):
-    """L2 distance between equally shaped float images; smaller is better."""
     difference = a - b
     return np.sqrt(np.sum(difference ** 2))
 
 
 def ncc_score(a, b):
-    """Mean-subtracted normalized correlation; larger is better."""
+    'larger is better'
     a = a - np.mean(a)
     b = b - np.mean(b)
     denominator = np.sqrt(np.sum(a ** 2)) * np.sqrt(np.sum(b ** 2))
     if denominator == 0:
-        return -np.inf  # Constant images cannot provide a useful match.
+        return -np.inf  # for const images
     return np.sum(a * b) / denominator
 
 
 def shift_image(image, offset):
-    """Apply (dy, dx): positive dy moves down; positive dx moves right."""
     return np.roll(image, shift=offset, axis=(0, 1))
 
 
 def align_single(moving, reference, radius=15, center=(0, 0), metric="l2"):
-    """Return the best total (dy, dx) to apply to moving, near center."""
     score_function = {"l2": l2_score, "ncc": ncc_score}[metric]
     center_y, center_x = center
     height, width = reference.shape
 
-    # Ignore 10% borders plus enough space for every candidate shift.
     row_margin = int(height * 0.1) + abs(center_y) + radius
     col_margin = int(width * 0.1) + abs(center_x) + radius
     if 2 * row_margin >= height or 2 * col_margin >= width:
         raise ValueError("Search window leaves no interior pixels to compare")
-    interior = (slice(row_margin, height - row_margin),
-                slice(col_margin, width - col_margin))
+    interior = (slice(row_margin, height - row_margin), slice(col_margin, width - col_margin))
     reference_crop = reference[interior]
 
     best_score = np.inf
@@ -78,7 +71,6 @@ def align_single(moving, reference, radius=15, center=(0, 0), metric="l2"):
 
 
 def align_pyramid(moving, reference, metric="l2"):
-    """Return a full-resolution (dy, dx) using coarse-to-fine alignment."""
     if max(reference.shape) <= 400:
         return align_single(moving, reference, metric=metric)
 
@@ -86,31 +78,26 @@ def align_pyramid(moving, reference, metric="l2"):
     small_reference = rescale(reference, 0.5, anti_aliasing=True)
     dy, dx = align_pyramid(small_moving, small_reference, metric=metric)
 
-    return align_single(moving, reference, radius=2,
-                        center=(2 * dy, 2 * dx), metric=metric)
+    return align_single(moving, reference, radius=2, center=(2 * dy, 2 * dx), metric=metric)
 
 
 def colorize(path, method="unaligned", metric="l2"):
-    """Return an RGB image and the applied green/red offsets in (dy, dx)."""
     blue, green, red = load_channels(path)
     if method == "unaligned":
         green_offset = red_offset = (0, 0)
     else:
         align = {"single": align_single, "pyramid": align_pyramid}[method]
         green_offset = align(green, blue, metric=metric)
-        # Red and green often have more similar brightness patterns than red and blue.
-        # Compose the two shifts so the final red offset is still relative to blue.
         red_to_green = align(red, green, metric=metric)
         red_offset = tuple(g + r for g, r in zip(green_offset, red_to_green))
-    rgb = np.dstack([shift_image(red, red_offset),
-                     shift_image(green, green_offset), blue])
+    rgb = np.dstack([shift_image(red, red_offset), shift_image(green, green_offset), blue])
     return rgb, {"green": green_offset, "red": red_offset}
 
 
 if __name__ == "__main__":
     filename = "cathedral.jpg"
-    method = "single"  # Use "pyramid" for TIFFs, "unaligned" for a baseline.
-    metric = "l2"  # Later try "ncc".
+    method = "single"
+    metric = "l2"
 
     rgb, offsets = colorize(DATA_DIR / filename, method, metric)
     for channel, (dy, dx) in offsets.items():
