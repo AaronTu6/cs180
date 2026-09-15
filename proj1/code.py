@@ -98,7 +98,10 @@ def colorize(path, method="unaligned", metric="l2"):
     else:
         align = {"single": align_single, "pyramid": align_pyramid}[method]
         green_offset = align(green, blue, metric=metric)
-        red_offset = align(red, blue, metric=metric)
+        # Red and green often have more similar brightness patterns than red and blue.
+        # Compose the two shifts so the final red offset is still relative to blue.
+        red_to_green = align(red, green, metric=metric)
+        red_offset = tuple(g + r for g, r in zip(green_offset, red_to_green))
     rgb = np.dstack([shift_image(red, red_offset),
                      shift_image(green, green_offset), blue])
     return rgb, {"green": green_offset, "red": red_offset}

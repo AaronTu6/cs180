@@ -4,14 +4,14 @@ import html
 import json
 from pathlib import Path
 
+from PIL import Image
+
 ROOT = Path(__file__).resolve().parent
 
 
 def build_page():
     results = json.loads((ROOT / "results.json").read_text(encoding="utf-8"))
     sources = json.loads((ROOT / "sources.json").read_text(encoding="utf-8"))
-    reviews = json.loads((ROOT / "reviews.json").read_text(encoding="utf-8"))
-    environment = json.loads((ROOT / "environment.json").read_text(encoding="utf-8"))
     lookup = {(r["filename"], r["method"], r["metric"]): r for r in results}
     supplied = sorted({r["filename"] for r in results if r["group"] == "provided"})
     extra = [s["filename"] for s in sources]
@@ -31,7 +31,6 @@ def build_page():
 
     def card(filename, method):
         row = lookup[filename, method, "ncc"]
-        note = reviews[filename]["ncc"]
         return f'''<article class="result-card" data-filename="{filename}" data-method="{method}">
           <a class="result-link" href="{row['output']}" aria-label="Open full-resolution {html.escape(title(filename))}">
             <img class="result-image" src="{row['preview']}" alt="{html.escape(title(filename))}, aligned with {method} NCC"
@@ -39,15 +38,14 @@ def build_page():
           </a>
           <div class="card-body"><h3>{html.escape(title(filename))}</h3>
             <p class="result-offsets">{offsets(row)}</p>
-            <p class="result-note">{html.escape(note)}</p>
           </div></article>'''
 
     def controls(section):
         return f'''<div class="view-controls" role="group" aria-label="Image comparison for {section}">
-          <button type="button" data-view="ncc" aria-pressed="true">NCC alignment</button>
-          <button type="button" data-view="l2" aria-pressed="false">L2 alignment</button>
-          <button type="button" data-view="unaligned" aria-pressed="false">Before alignment</button>
-        </div><p class="view-hint">Switch views to compare. Click an aligned image for the full-resolution JPEG.</p>'''
+          <button type="button" data-view="ncc" aria-pressed="true">NCC</button>
+          <button type="button" data-view="l2" aria-pressed="false">L2</button>
+          <button type="button" data-view="unaligned" aria-pressed="false">Unaligned</button>
+        </div>'''
 
     def table(method, filenames, metric):
         rows = []
@@ -62,10 +60,14 @@ def build_page():
           <th scope="col">Green → blue</th><th scope="col">Red → blue</th><th scope="col">Seconds</th></tr></thead>
           <tbody>{''.join(rows)}</tbody></table></div>'''
 
-    source_list = ''.join(f'''<li><a href="{s['item_url']}">{html.escape(s['title'])}</a>:
-      {html.escape(s['description'])} <span class="source-id">{s['negative_id']}</span>.
-      <a href="{s['download_url']}">Original stacked TIFF</a>.</li>''' for s in sources)
-    ncc_pyramid = [r for r in results if r["method"] == "pyramid" and r["metric"] == "ncc"]
+    source_list = ''.join(f'<li><a href="{source["item_url"]}">{html.escape(source["title"])}</a> '
+                          f'({source["negative_id"]})</li>' for source in sources)
+    emir = lookup["emir.tif", "pyramid", "ncc"]
+    # Show the same 500-pixel face region as in the saved previous result.
+    with Image.open(ROOT / emir["output"]) as image:
+        cx, cy = int(image.width * 0.5), int(image.height * 0.34)
+        detail = image.crop((cx - 250, cy - 250, cx + 250, cy + 250))
+        detail.save(ROOT / "assets/emir_via_green_detail.jpg", quality=90)
     replacements = {
         "SINGLE_CONTROLS": controls("single-scale results"),
         "SINGLE_CARDS": ''.join(card(f, "single") for f in supplied if f.endswith(".jpg")),
@@ -78,11 +80,8 @@ def build_page():
         "L2_TABLE": table("pyramid", supplied + extra, "l2"),
         "SOURCES": source_list,
         "RUN_COUNT": str(len(results)),
-        "MAX_TIME": f'{max(r["seconds"] for r in ncc_pyramid):.1f}',
-        "TOTAL_TIME": f'{sum(r["seconds"] for r in results):.1f}',
-        "ENVIRONMENT": html.escape(f'Python {environment["python"]}, NumPy {environment["numpy"]}, '
-                                   f'scikit-image {environment["scikit_image"]}; {environment["processor"]}.'),
-        "DATA": json.dumps({"results": results, "reviews": reviews}).replace("<", "\\u003c")
+        "EMIR_RED_OFFSET": f'({emir["red_dx"]}, {emir["red_dy"]})',
+        "DATA": json.dumps({"results": results}).replace("<", "\\u003c")
     }
     page = (ROOT / "page_template.html").read_text(encoding="utf-8")
     for key, value in replacements.items():

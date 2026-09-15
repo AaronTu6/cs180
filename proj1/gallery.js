@@ -15,7 +15,6 @@ document.querySelectorAll(".gallery-section").forEach(section => {
         const image = card.querySelector(".result-image");
         const link = card.querySelector(".result-link");
         const offset = card.querySelector(".result-offsets");
-        const note = card.querySelector(".result-note");
         const title = card.querySelector("h3").textContent;
         if (view === "unaligned") {
           image.src = `assets/${filename.replace(/\.[^.]+$/, "")}_unaligned.jpg`;
@@ -23,7 +22,6 @@ document.querySelectorAll(".gallery-section").forEach(section => {
           link.href = image.getAttribute("src");
           link.setAttribute("aria-label", `Open unaligned preview of ${title}`);
           offset.textContent = "G (0, 0) · R (0, 0) · no alignment";
-          note.textContent = "Channels stacked directly; resized preview for comparison.";
         } else {
           const row = lookup.get(`${filename}|${method}|${view}`);
           image.src = row.preview;
@@ -31,7 +29,6 @@ document.querySelectorAll(".gallery-section").forEach(section => {
           link.href = row.output;
           link.setAttribute("aria-label", `Open full-resolution ${title}`);
           offset.textContent = `G (${row.green_dx}, ${row.green_dy}) · R (${row.red_dx}, ${row.red_dy}) · ${row.seconds.toFixed(2)} s`;
-          note.textContent = report.reviews[filename][view];
         }
       });
     });

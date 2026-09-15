@@ -25,6 +25,8 @@ JPEGs in `outputs/`, web previews in `assets/`, and measurements in
 `results.csv` and `results.json`. Times include reading, alignment, and RGB
 assembly, excluding image export. Offsets in the results are the applied
 `(x, y)` shifts relative to blue; the code internally uses `(dy, dx)`.
+Green is matched to blue, red is matched to green, and those offsets are
+added to express the red displacement relative to blue.
 
 To run a subset:
 
@@ -52,15 +54,20 @@ For one image, edit the three settings in the main block of `code.py` and run it
 
 ## Results and limitations
 
-NCC produces substantially aligned scene structure on 16 of the 17 plates
-by visual inspection; Emir remains the clear failure. L2 also fails on Church.
-Colored borders, casts, and some local fringes remain. No ground-truth offsets
+Matching red through green fixes the conspicuous Emir failure seen with the
+previous direct red-to-blue NCC match. The page includes native-resolution
+face details before and after the change. It also fixes the previous L2
+failure on Church. Colored borders, casts, and small local fringes remain;
+visual inspection should not be interpreted as a perfect-alignment score.
+No ground-truth offsets
 were available, and no automatic cropping, contrast adjustment, white balance,
 or edge-feature extension is claimed. Full resolution is preserved for alignment
 and the output JPEG dimensions; only the web previews are resized.
 
 Synthetic checks covered known shifts, a nonzero search center, NCC brightness
-invariance, and multi-level alignment with odd input dimensions.
+invariance, multi-level alignment with odd input dimensions, and composition
+of the red-to-green and green-to-blue offsets into an exactly reconstructed
+synthetic RGB image.
 
 ## Submission
 

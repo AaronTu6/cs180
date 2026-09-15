@@ -11,6 +11,7 @@
     "coarse_max_dimension": 400,
     "border_fraction": 0.1,
     "pyramid_scale": 0.5,
-    "anti_aliasing": true
+    "anti_aliasing": true,
+    "channel_alignment": "green to blue; red to green; compose red offset relative to blue"
   }
 }

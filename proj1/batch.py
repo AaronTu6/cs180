@@ -76,7 +76,8 @@ def run_batch(metrics, groups):
         "scikit_image": skimage.__version__, "platform": platform.platform(),
         "processor": platform.processor(), "timing": "Read + align + RGB assembly; JPEG export excluded",
         "parameters": {"coarse_radius": 15, "refinement_radius": 2, "coarse_max_dimension": 400,
-                       "border_fraction": 0.1, "pyramid_scale": 0.5, "anti_aliasing": True}
+                       "border_fraction": 0.1, "pyramid_scale": 0.5, "anti_aliasing": True,
+                       "channel_alignment": "green to blue; red to green; compose red offset relative to blue"}
     }
     (ROOT / "environment.json").write_text(json.dumps(environment, indent=2) + "\n", encoding="utf-8")
     print(f"Saved {len(results)} measurements to results.csv and results.json", flush=True)
