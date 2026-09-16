@@ -4,3 +4,8 @@ proj1/CS180_fa2026_proj1_data/
 proj1/extra_data/
 proj1/PLAN.md
 .browser-check/
+
+# Keep Project 1 implementation and submission archives local.
+proj1/**/*.py
+proj1/**/*.ipynb
+proj1/**/*.zip
