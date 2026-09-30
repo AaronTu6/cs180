@@ -34,3 +34,15 @@ def sharpen_image(image, alpha=1.0, kernel_size=9, sigma=1.5):
 
     sharpen_kernel = (1 + alpha) * identity - alpha * gaussian
     return apply_filter(image, sharpen_kernel)
+
+
+def hybrid_image(low_image, high_image, sigma_low=10, sigma_high=3):
+    low_size = 2 * int(np.ceil(3 * sigma_low)) + 1
+    high_size = 2 * int(np.ceil(3 * sigma_high)) + 1
+    low = blur_image(low_image, low_size, sigma_low)
+    high = high_image - blur_image(high_image, high_size, sigma_high)
+    return low, high, low + high
+
+
+def fourier_magnitude(image):
+    return np.log1p(np.abs(np.fft.fftshift(np.fft.fft2(image))))

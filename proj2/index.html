@@ -13,6 +13,7 @@
     figure { margin: 0; min-width: 0; }
     img { width: 100%; height: auto; display: block; }
     figcaption { font-size: 14px; margin-top: 6px; }
+    .hybrid-small { width: 64px; margin: 12px 0; }
     pre { background: #f5f5f5; padding: 16px; overflow-x: auto; font-size: 13px; }
     .table { overflow-x: auto; }
     table { border-collapse: collapse; width: 100%; font-size: 14px; }
@@ -148,5 +149,43 @@ dy = np.array([[1], [0], [-1]])</code></pre>
   </figure>
   <p>The resharpened image improves contrast around the face and coat compared with the blurred image, but does not recover the original fine fur and grass texture. Unsharp masking boosts the high-frequency information that remains; it does not undo the blur or reconstruct the lost detail.</p>
   <p>Samoyed photo: <a href="https://commons.wikimedia.org/wiki/File:Samoyed_dog.jpg">Ruerd Kroon, Wikimedia Commons</a>, <a href="https://creativecommons.org/licenses/by-sa/4.0/">CC BY-SA 4.0</a>. Resized, blurred, and sharpened for this experiment; the modified Samoyed images and figures are also shared under CC BY-SA 4.0.</p>
+  <h2 id="part22">Part 2.2: Hybrid Images</h2>
+  <p>A hybrid combines the low frequencies of one image with the high frequencies of another: H = A * G<sub>low</sub> + (B &minus; B * G<sub>high</sub>). Nearby, B's fine details are visible; farther away, those details become hard to resolve and A's broad structure becomes more apparent. All examples use grayscale so the effect comes from spatial detail.</p>
+
+  <h3>Derek + Nutmeg: full process</h3>
+  <figure>
+    <a href="assets/part22_derek_nutmeg_inputs.png"><img src="assets/part22_derek_nutmeg_inputs.png" alt="Original Derek and Nutmeg images and their final hybrid" width="1400" height="560" loading="lazy"></a>
+    <figcaption>Original inputs from the provided starter folder and the final hybrid. Derek supplies the low frequencies; Nutmeg supplies the high frequencies.</figcaption>
+  </figure>
+  <p>I used the starter's two-point alignment idea, implemented with OpenCV and saved eye coordinates. Translation, rotation, and uniform scaling place the eyes at the same locations in a 320 &times; 400 output crop. This keeps corresponding facial features together instead of producing two displaced faces. Reflection extends any sampled areas outside the source image.</p>
+  <figure>
+    <a href="assets/part22_process.png"><img src="assets/part22_process.png" alt="Aligned Derek and Nutmeg, their filtered components, the hybrid, and a reduced-resolution preview" width="1400" height="1120" loading="lazy"></a>
+    <figcaption>Aligned inputs and hybrid above; filtered components below. The signed high-pass image uses gray for zero, with display limits of &plusmn;0.25. Only displayed images are clipped; filtering and addition retain signed values.</figcaption>
+  </figure>
+  <p><strong>Cutoff choice:</strong> I tried low-pass &sigma; values of 6, 10, and 16 and high-pass subtraction &sigma; values of 1.5, 3, and 5. I chose 10 and 3: 6 leaves more competing Derek detail, while 16 softens his face too much; 1.5 gives a faint cat contribution, while 5 retains more of the cat's larger structures. The selected kernels are 61 &times; 61 and 19 &times; 19, extending three standard deviations from the center. Gaussian cutoffs are gradual; these &sigma; values control the frequency separation rather than imposing a hard cutoff.</p>
+  <figure>
+    <a href="assets/part22_fourier.png"><img src="assets/part22_fourier.png" alt="Log Fourier magnitudes of the two aligned inputs, low-pass Derek, high-pass Nutmeg, and the hybrid" width="1960" height="490" loading="lazy"></a>
+    <figcaption>Fourier magnitudes, computed before clipping as log(1 + |fftshift(fft2(image))|), using one shared display scale.</figcaption>
+  </figure>
+  <p>The center of each spectrum represents low frequencies; locations farther from the center represent faster spatial changes. Blurring concentrates Derek's spectrum near the center. Subtracting a blur suppresses Nutmeg's low frequencies while retaining its finer texture. The hybrid combines Derek's central low-frequency content with Nutmeg's broader high-frequency content.</p>
+  <p>The same hybrid displayed smaller makes Derek easier to see:</p>
+  <img class="hybrid-small" src="assets/part22_derek_nutmeg.png" alt="Derek and Nutmeg hybrid at a smaller viewing size" width="320" height="400" loading="lazy">
+
+  <h3>Custom hybrid: Aaron + Samoyed</h3>
+  <figure>
+    <a href="assets/part22_aaron_samoyed_inputs.png"><img src="assets/part22_aaron_samoyed_inputs.png" alt="Original Aaron and Samoyed photographs and their aligned hybrid" width="1400" height="560" loading="lazy"></a>
+    <figcaption>My portrait supplies the low frequencies and the Samoyed supplies the high frequencies, with &sigma;<sub>low</sub> = 10 and &sigma;<sub>high</sub> = 3 after eye alignment.</figcaption>
+  </figure>
+  <p>The dog's nose, mouth, and fur are apparent nearby; my face and hair form the broader structure. Different human and dog facial proportions leave some overlapping features even after aligning the eyes.</p>
+  <img class="hybrid-small" src="assets/part22_aaron_samoyed.png" alt="Aaron and Samoyed hybrid at a smaller viewing size" width="320" height="400" loading="lazy">
+  <p>The Samoyed source and hybrid figure use the CC BY-SA 4.0 attribution given in Part 2.1; this hybrid is also shared under that license.</p>
+
+  <h3>Custom hybrid: two portraits</h3>
+  <figure>
+    <a href="assets/part22_portraits_inputs.png"><img src="assets/part22_portraits_inputs.png" alt="Two original portraits from Project 0 and their hybrid" width="1400" height="560" loading="lazy"></a>
+    <figcaption>My farther-camera portrait from Project 0 supplies the low frequencies; the close-camera portrait supplies the high frequencies. Both are eye-aligned, with &sigma;<sub>low</sub> = 10 and &sigma;<sub>high</sub> = 3.</figcaption>
+  </figure>
+  <p>This change is subtler because both inputs show the same person. The close-camera portrait contributes the detailed eyes, eyebrows, and mouth; the other portrait contributes the broad lighting and face shape. Two-point alignment cannot fully correct perspective differences, so some hair and background contours remain doubled.</p>
+  <img class="hybrid-small" src="assets/part22_portraits.png" alt="Two-portrait hybrid at a smaller viewing size" width="320" height="400" loading="lazy">
 </body>
 </html>
