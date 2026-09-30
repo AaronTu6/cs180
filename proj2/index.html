@@ -187,5 +187,35 @@ dy = np.array([[1], [0], [-1]])</code></pre>
   </figure>
   <p>This change is subtler because both inputs show the same person. The close-camera portrait contributes the detailed eyes, eyebrows, and mouth; the other portrait contributes the broad lighting and face shape. Two-point alignment cannot fully correct perspective differences, so some hair and background contours remain doubled.</p>
   <img class="hybrid-small" src="assets/part22_portraits.png" alt="Two-portrait hybrid at a smaller viewing size" width="320" height="400" loading="lazy">
+  <h2 id="part23">Part 2.3: Gaussian and Laplacian Stacks</h2>
+  <p>I built six levels without downsampling. G<sub>0</sub> is the original; each next level blurs the previous one, using successive Gaussian &sigma; values of 2, 4, 8, 16, and 32 with reflected boundaries. Laplacian levels isolate detail: L<sub>i</sub> = G<sub>i</sub> &minus; G<sub>i+1</sub>, with L<sub>5</sub> = G<sub>5</sub> retaining the remaining low frequencies. Summing all six Laplacian levels reconstructs each original, verified with <code>np.allclose</code>.</p>
+  <figure>
+    <a href="assets/part23_stacks.png"><img src="assets/part23_stacks.png" alt="Six full-resolution Gaussian and Laplacian levels for the apple and orange, plus the Gaussian mask stack" width="1960" height="1540" loading="lazy"></a>
+    <figcaption>Detail bands use gray for zero, with a shared apple/orange display scale at each level. The last level is the unscaled low-frequency residual. White in the mask selects the apple.</figcaption>
+  </figure>
+
+  <h2 id="part24">Part 2.4: Multiresolution Blending</h2>
+  <p>I build a Gaussian stack M of the mask and blend corresponding Laplacian levels: B<sub>i</sub> = M<sub>i</sub>L<sub>A,i</sub> + (1 &minus; M<sub>i</sub>)L<sub>B,i</sub>. The final image is &sum;B<sub>i</sub>. Fine detail transitions over a narrow region; broad colors transition gradually, reducing the visible seam. All examples use the same six-level settings.</p>
+  <h3>Apple + orange: Figure 3.42 (a)&ndash;(l)</h3>
+  <figure>
+    <a href="assets/part23_oraple_process.png"><img src="assets/part23_oraple_process.png" alt="Twelve-panel apple and orange blend: masked Laplacian bands at levels 0, 2, and 4, followed by reconstructed contributions and the final oraple" width="1260" height="1680" loading="lazy"></a>
+    <figcaption>Columns: weighted apple, weighted orange, and their sum. Rows show levels 0, 2, and 4; the bottom sums all six levels, including the residual. Each detail row shares one signed display scale. The vertical mask preserves apple texture on the left and orange texture on the right while smoothing their color transition.</figcaption>
+  </figure>
+
+  <h3>Custom blend: Samoyed + Nutmeg</h3>
+  <figure>
+    <a href="assets/part24_dog_cat.png"><img src="assets/part24_dog_cat.png" alt="Aligned Samoyed and Nutmeg, irregular muzzle mask, masked inputs, and final dog-cat blend" width="1400" height="1120" loading="lazy"></a>
+    <figcaption>An irregular polygon selects the dog's muzzle after eye alignment. Blending softens its boundary while keeping the cat's eyes and ears; the different fur colors remain noticeable.</figcaption>
+  </figure>
+  <figure>
+    <a href="assets/part24_dog_cat_process.png"><img src="assets/part24_dog_cat_process.png" alt="Favorite custom blend breakdown showing masked dog and cat Laplacian bands, their sums, and reconstructed contributions" width="1260" height="1680" loading="lazy"></a>
+    <figcaption>Favorite-result breakdown: the same levels, weighting, and display convention as the oraple. The mask spreads farther at coarser scales. Samoyed attribution is given in Part 2.1; these modified figures are also shared under CC BY-SA 4.0.</figcaption>
+  </figure>
+
+  <h3>Custom blend: two portraits</h3>
+  <figure>
+    <a href="assets/part24_portraits.png"><img src="assets/part24_portraits.png" alt="Eye-aligned close and far portraits, irregular face mask, masked inputs, and final blended portrait" width="1400" height="1120" loading="lazy"></a>
+    <figcaption>An irregular face mask inserts my close-camera face into my farther-camera portrait from Project 0. The transition is smooth, though eye alignment cannot remove the difference in perspective.</figcaption>
+  </figure>
 </body>
 </html>

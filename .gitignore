@@ -9,3 +9,6 @@ proj1/PLAN.md
 proj1/**/*.py
 proj1/**/*.ipynb
 proj1/**/*.zip
+
+# Keep Project 2 implementation local; retain the supplied starter code.
+proj2/*.py
