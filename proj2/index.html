@@ -121,5 +121,32 @@ dy = np.array([[1], [0], [-1]])</code></pre>
     <figcaption>Gradient magnitudes from the two methods, displayed on the same scale.</figcaption>
   </figure>
   <p>The x derivatives, y derivatives, and gradient magnitudes all passed <code>np.allclose</code> with <code>rtol=0, atol=1e-12</code> on the image interior. I excluded the outermost row and column on each side because the first method crops the intermediate blurred image with <code>mode="same"</code>, causing boundary differences. Both methods produce the same smoothed interior response, unlike the noisier unsmoothed finite differences in Part 1.2.</p>
+  <h2 id="part21">Part 2.1: Image Sharpening</h2>
+  <p>A Gaussian blur keeps low frequencies: broad, slowly varying image structure. Subtracting this blur from the input isolates high frequencies such as edges and fine texture. Unsharp masking adds a scaled copy of these details back to the input:</p>
+  <p>B = I * G, &nbsp; H = I &minus; B, &nbsp; S = I + &alpha;H.</p>
+  <p>Combining the operations gives the sharpening kernel K = (1 + &alpha;)&delta; &minus; &alpha;G, where &delta; is zero everywhere except for a 1 at its center. I apply K in one convolution per RGB channel, using symmetric boundary padding. The Gaussian is 9 &times; 9 with &sigma; = 1.5, and I compare &alpha; = 0.5, 1.5, and 3. Results are clipped to [0, 1] only for display.</p>
+
+  <h3>Taj Mahal</h3>
+  <figure>
+    <a href="assets/part21_taj.png"><img src="assets/part21_taj.png" alt="Taj Mahal input, Gaussian blur, high-frequency residual, and sharpening amounts 0.5, 1.5, and 3" width="1400" height="1120" loading="lazy"></a>
+    <figcaption>Top: input, Gaussian blur, and high frequencies. Bottom: increasing sharpening strength. High frequencies are displayed as 0.5 + 3H, so zero is gray and both positive and negative details are visible.</figcaption>
+  </figure>
+  <p>Sharpening increases contrast in the dome tiles, arch, and building outlines. An amount of 0.5 makes a subtle change; 1.5 makes details more distinct. At 3, the outlines become harsh and bright halos appear, especially where the building meets the sky.</p>
+
+  <h3>Blurry Samoyed</h3>
+  <p>I resized the Samoyed photo to 450 &times; 600 and deliberately blurred it with a 13 &times; 13 Gaussian, &sigma; = 2, to create this input. The low-pass image below is an additional blur used to extract the sharpening details from that already-blurry input.</p>
+  <figure>
+    <a href="assets/part21_samoyed.png"><img src="assets/part21_samoyed.png" alt="Blurry Samoyed input, additional Gaussian blur, high-frequency residual, and three sharpening strengths" width="1400" height="1120" loading="lazy"></a>
+    <figcaption>The same unsharp-mask settings and high-frequency display scale as the Taj Mahal comparison.</figcaption>
+  </figure>
+  <p>Increasing &alpha; strengthens the boundaries around the dog's eyes, nose, and fur, as well as the background foliage. The image appears less soft, but fine individual hairs remain blurred even at the largest sharpening amount.</p>
+
+  <h3>Evaluation: blur a sharper image, then sharpen it again</h3>
+  <figure>
+    <a href="assets/part21_recovery.png"><img src="assets/part21_recovery.png" alt="Original Samoyed reference, deliberately blurred image, and result after sharpening with alpha 1.5" width="1400" height="700" loading="lazy"></a>
+    <figcaption>Original reference, added Gaussian blur, and resharpened result.</figcaption>
+  </figure>
+  <p>The resharpened image improves contrast around the face and coat compared with the blurred image, but does not recover the original fine fur and grass texture. Unsharp masking boosts the high-frequency information that remains; it does not undo the blur or reconstruct the lost detail.</p>
+  <p>Samoyed photo: <a href="https://commons.wikimedia.org/wiki/File:Samoyed_dog.jpg">Ruerd Kroon, Wikimedia Commons</a>, <a href="https://creativecommons.org/licenses/by-sa/4.0/">CC BY-SA 4.0</a>. Resized, blurred, and sharpened for this experiment; the modified Samoyed images and figures are also shared under CC BY-SA 4.0.</p>
 </body>
 </html>
